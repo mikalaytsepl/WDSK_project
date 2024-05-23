@@ -18,6 +18,6 @@ def create_process_list(count, arrival_low, arrival_high, execution_low, executo
     return proc_list
 
 
-process_dict = create_process_list(10, 1000, 6000, 3000, 7000)
+process_dict = create_process_list(10, 0, 30, 0, 30)
 finish = dt.now()
 elapsed_ms = (finish - start).total_seconds() * 1000
