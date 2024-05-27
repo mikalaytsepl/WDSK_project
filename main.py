@@ -1,6 +1,7 @@
 from threading import Thread, Event
 import ast
 import time
+from datetime import datetime as dt
 
 elapsed = -1
 pool = []
@@ -16,9 +17,6 @@ sjf_niew_event = Event()
 sjf_wyw_ivent = Event()
 
 
-# fcfs_event.set()
-
-
 def get_from_file(testcase_file) -> list:
     result = []
     with open(f'Test_cases/{testcase_file}.txt', "r+") as proc_file:
@@ -32,9 +30,8 @@ def counter(algorythm: Event):
     while not stop_event.is_set() or len(pool):
         algorythm.wait()
         algorythm.clear()
-
+        print(elapsed)
         elapsed += 1
-        print(f'counter incremented, current counter value: {elapsed}')
         counter_event.set()
 
 
@@ -120,14 +117,13 @@ def sjf_wyw() -> None:
         pool = sorted(pool, key=lambda item: item[2], reverse=False)
         try:
             run: list = pool.pop(0)
-             # make waiting time
+            for process in pool:
+                process[3] += 1
             if run[2] >= 0:
                 run[2] -= 1
                 time.sleep(0.001)
                 sjf_wyw_ivent.set()
                 if run[2] == 0:
-                    waiting_time = run[3] - run[1]  # check what is wrong with waiting time
-                    run.append(waiting_time)
                     done.append(run)
                 else:
                     pool.append(run)
@@ -184,6 +180,33 @@ def run_sjf_wyw(event, file):
     counter_thread.join()
 
 
-run_sjf_wyw(sjf_wyw_ivent, "05.21.24 13.3626")
+start = dt.now()
 
-print(done)
+run_sjf_wyw(sjf_wyw_ivent, "05.27.24 23.3048")
+
+finish = dt.now()
+elapsed_ms = (finish - start).total_seconds() * 1000
+
+
+# works well, and now it is time to make it a propper formal output from it, and then cycle the 100 processes hell yeah!
+
+class Formatter:
+    def fcfs_formatter(self):
+        pass
+
+    def sjf_nie(self):
+        pass
+
+    def sjf_wyw(self):
+        pass
+
+    def __init__(self, donelist: list, algorythm: str) -> None:
+        self.done = donelist
+
+        match algorythm:
+            case "fcfs":
+                self.fcfs_formatter()
+            case "sjf_nie":
+                self.sjf_nie()
+            case "sjf_wyw":
+                self.sjf_wyw()
