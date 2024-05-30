@@ -6,6 +6,7 @@ from datetime import datetime as dt
 elapsed = -1
 pool = []
 done = []
+iter_time = []
 
 counter_event = Event()
 checker_event = Event()
@@ -57,16 +58,19 @@ def fcfs() -> None:
     global pool
     global elapsed
     global done
+    global iter_time
     while not stop_event.is_set():
+
+        start = dt.now()
 
         checker_event.wait()
         checker_event.clear()
 
         try:
 
+            print(elapsed)
             run: list = pool.pop(0)
-            waiting_time = elapsed - run[1]
-            run.append(waiting_time)
+            run[3] = elapsed - run[1]
             for _ in range(run[2]):
                 fcfs_event.set()
                 time.sleep(0.001)
@@ -75,10 +79,8 @@ def fcfs() -> None:
         except IndexError:
             fcfs_event.set()
 
-
-def av_wait(done_processes: list) -> float:
-    return sum(i[3] for i in done_processes) / len(done_processes)  # sum wylicza całą sume wszystkich elementów
-    # podanych przez cykl w środku a póżniej to sie dzieli przez ilość procesów
+        finish = dt.now()
+        iter_time.append((finish - start).total_seconds() * 1000)  # elapsed time during iteration in miliseconds
 
 
 def sjf_niew() -> None:
@@ -94,8 +96,7 @@ def sjf_niew() -> None:
         try:
 
             run: list = pool.pop(0)
-            waiting_time = elapsed - run[1]
-            run.append(waiting_time)
+            run[3] = elapsed - run[1]
             for _ in range(run[2]):
                 sjf_niew_event.set()
                 time.sleep(0.001)
@@ -136,6 +137,7 @@ def sjf_wyw() -> None:
 
 # works hehe
 def run_fcfs(event, file):
+    event.set()  # determine wether to switch to global or to continue pushing them as params
     counter_thread = Thread(target=counter, args=(event,))
     fcfs_thread = Thread(target=fcfs)
     sorter_thread = Thread(target=checker, args=(file,))
@@ -180,33 +182,58 @@ def run_sjf_wyw(event, file):
     counter_thread.join()
 
 
-start = dt.now()
-
-run_sjf_wyw(sjf_wyw_ivent, "05.27.24 23.3048")
-
-finish = dt.now()
-elapsed_ms = (finish - start).total_seconds() * 1000
+'''run_fcfs(fcfs_event, "Test0")
+print(done)'''
 
 
-# works well, and now it is time to make it a propper formal output from it, and then cycle the 100 processes hell yeah!
+class Tester:
 
-class Formatter:
-    def fcfs_formatter(self):
-        pass
+    @staticmethod  # works
+    def _make_table(proc_list: list, num: int, path: str) -> None:
+        with open(f"Outputs/{path}/Test{num}.txt", "w+") as file:
+            file.write(f"{'PID'.center(3)} | {'AT'.center(3)} | {'ET'.center(3)} | {'WT'.center(3)}\n")
+            for proc in proc_list:
+                line = (f"{str(proc[0]).center(3)} | {str(proc[1]).center(3)} |"
+                        f" {str(proc[2]).center(3)} | {str(proc[3]).center(3)}\n")
+                file.write(line)
 
-    def sjf_nie(self):
-        pass
+    @staticmethod
+    def _av_wait() -> float:
+        global done
+        return sum(i[3] for i in done) / len(done)  # sum wylicza całą sume wszystkich elementów
+        # podanych przez cykl w środku a póżniej to sie dzieli przez ilość procesów
 
-    def sjf_wyw(self):
-        pass
+    @staticmethod
+    def _av_iter_time() -> float:
+        global iter_time
+        return sum(time for time in iter_time) / len(iter_time)  # sum wylicza całą sume wszystkich elementów
+        # podanych przez cykl w środku a póżniej to sie dzieli przez ilość procesów
 
-    def __init__(self, donelist: list, algorythm: str) -> None:
-        self.done = donelist
+    def make_stats(self, name: str, count: int) -> None:
+        global done
+        global iter_time
+        global elapsed
+        global pool
 
-        match algorythm:
-            case "fcfs":
-                self.fcfs_formatter()
-            case "sjf_nie":
-                self.sjf_nie()
-            case "sjf_wyw":
-                self.sjf_wyw()
+        for i in range(count):
+            done.clear()
+            iter_time.clear()
+            elapsed = -1
+            pool.clear()
+            # start_global = dt.now()
+
+            stop_event.clear()
+
+            run_fcfs(fcfs_event, f"Test{i}")
+
+            # end_global = dt.now()
+
+            self._make_table(done, i, name)
+
+            with open(f'Outputs/{name}/stats/{name}_statiscics_file.txt', 'w+') as file: # tests work, make a working
+                # stats file (seems like it is owerwriting the thing ove and over again)
+                file.write(f"Test{i} \n")  # does not write this in the file for some reason
+
+
+test = Tester()
+test.make_stats("fcfs", 5)
