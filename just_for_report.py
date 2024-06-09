@@ -8,14 +8,9 @@ data_for_graphs = []
 def get_data_return(name: str) -> list:
     res = []
     with open(f'Outputs/{name}/stats/{name}_statiscics_file.txt', 'r') as file:
-        res.extend(re.findall(r'\d+\.\d+', row) for row in file)
+        res.extend(re.findall(r'\d+\.\d+', row) for row in
+                   file)  # otwiera plik statystyki dla wskazanego algorytmu i "wyciąga" wszystkie liczby ze wszystkich rzędów w postaci listy
         return res
-
-
-def get_data(name: str) -> None:
-    with open(f'Outputs/{name}/stats/{name}_statiscics_file.txt', 'r') as file:
-        data_for_graphs.extend(re.findall(r'\d+\.\d+', row) for row in file)
-        print(data_for_graphs)
 
 
 def prepare_bar_waiting():
@@ -32,16 +27,6 @@ def prepare_bar_waiting():
     plt.title('Reprezentacja czasów czekania')
 
     plt.show()
-
-
-'''get_data("sjf_wyw")
-prepare_bar_waiting()'''
-
-'''get_data("sjf_niew")
-prepare_bar_waiting()'''
-
-'''get_data("fcfs")
-prepare_bar_waiting()'''
 
 
 def prepare_bar_iteration():
@@ -83,8 +68,6 @@ def prepare_graph_for_three_waiting():
     plt.show()
 
 
-# prepare_graph_for_three_waiting()
-
 def prepare_graph_for_three_iteration():
     height_fcfs = [float(h[1]) for h in get_data_return("fcfs")]
     height_sjf_niew = [float(h[1]) for h in get_data_return("sjf_niew")]
@@ -108,8 +91,6 @@ def prepare_graph_for_three_iteration():
     plt.show()
 
 
-# prepare_graph_for_three_iteration()
-
 def prepare_graph_for_three_overall_execution():
     height_fcfs = [float(h[0]) for h in get_data_return("fcfs")]
     height_sjf_niew = [float(h[0]) for h in get_data_return("sjf_niew")]
@@ -132,4 +113,47 @@ def prepare_graph_for_three_overall_execution():
     plt.legend()
     plt.show()
 
-prepare_graph_for_three_overall_execution()
+
+def plot_boxplot(data, title, labels):
+    fig, ax = plt.subplots()
+    ax.boxplot(data)
+    ax.set_title(title)
+    ax.set_xticklabels(labels)
+    plt.show()
+
+
+def prepare_boxplot_for_three_waiting():
+    height_fcfs = [float(h[2]) for h in get_data_return("fcfs")]
+    height_sjf_niew = [float(h[2]) for h in get_data_return("sjf_niew")]
+    height_sjf_wyw = [float(h[2]) for h in get_data_return("sjf_wyw")]
+
+    waits = [height_fcfs, height_sjf_niew, height_sjf_wyw]
+    waits_labels = ["fcfs waiting", "sjf niew. waiting", "sjf wyw. waiting"]
+
+    plot_boxplot(waits, 'Porównanie średnich czasów czekania', waits_labels)
+
+
+def prepare_boxplot_for_three_iteration():
+    height_fcfs = [float(h[1]) for h in get_data_return("fcfs")]
+    height_sjf_niew = [float(h[1]) for h in get_data_return("sjf_niew")]
+    height_sjf_wyw = [float(h[1]) for h in get_data_return("sjf_wyw")]
+
+    waits = [height_fcfs, height_sjf_niew, height_sjf_wyw]
+    waits_labels = ["fcfs iteration", "sjf niew. iteration", "sjf wyw. iteration"]
+
+    plot_boxplot(waits, 'Porównanie średnich czasów iteracji', waits_labels)
+
+
+def prepare_boxplot_for_three_overall_execution():
+    height_fcfs = [float(h[0]) for h in get_data_return("fcfs")]
+    height_sjf_niew = [float(h[0]) for h in get_data_return("sjf_niew")]
+    height_sjf_wyw = [float(h[0]) for h in get_data_return("sjf_wyw")]
+
+    waits = [height_fcfs, height_sjf_niew, height_sjf_wyw]
+    waits_labels = ["fcfs", "sjf niew.", "sjf wyw."]
+
+    plot_boxplot(waits, 'Porównanie średnich czasów wykonania symulacji', waits_labels)
+
+
+prepare_boxplot_for_three_iteration()
+prepare_boxplot_for_three_overall_execution()

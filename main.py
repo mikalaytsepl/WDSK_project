@@ -2,6 +2,7 @@ from threading import Thread, Event
 import ast
 import time
 from datetime import datetime as dt
+import just_for_report as jfr
 
 elapsed = -1
 pool = []
@@ -276,6 +277,13 @@ class Tester:
 
 
 test = Tester()
-# test.make_stats("fcfs", 100)
-# test.make_stats("sjf_niew", 100)
-# test.make_stats("sjf_wyw", 100)
+test.make_stats("fcfs", 100)
+test.make_stats("sjf_niew", 100)
+test.make_stats("sjf_wyw", 100)
+
+jfr.prepare_graph_for_three_overall_execution()
+jfr.prepare_graph_for_three_iteration()
+jfr.prepare_graph_for_three_waiting()
+
+jfr.prepare_boxplot_for_three_waiting()
+jfr.prepare_boxplot_for_three_iteration()
